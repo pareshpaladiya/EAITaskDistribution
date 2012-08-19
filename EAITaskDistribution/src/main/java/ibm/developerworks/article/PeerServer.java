@@ -9,6 +9,7 @@ import org.apache.zookeeper.server.NIOServerCnxn;
 import org.apache.zookeeper.server.ZKDatabase;
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog;
 import org.apache.zookeeper.server.quorum.QuorumPeer;
+import org.apache.zookeeper.server.quorum.QuorumPeerConfig;
 
 /**
  * This is singleton server class. This class must be initialized before
@@ -22,7 +23,7 @@ public class PeerServer
 {
    private static QuorumPeer quorumPeer = null;
 
-   private static ServerClusterConfig localServerConfig = null;
+   private static QuorumPeerConfig localServerConfig = null;
    
    public static PeerServer instance = null;
 
@@ -32,10 +33,10 @@ public class PeerServer
     * @param miServerId
     * @throws Exception 
     */
-   public static void init(Configuration foServerClusterConfig, int miServerId) throws Exception
+   public static void init(int miServerId) throws Exception
    {
       
-         initConfig(foServerClusterConfig,miServerId);  
+         initConfig(miServerId);  
          
 
          if (instance ==null)
@@ -46,16 +47,14 @@ public class PeerServer
          RunQuorumPeer loLocalServer = instance.new RunQuorumPeer(localServerConfig);
          loLocalServer.start();
          
-         
-         
          initMessagingServer();
                 
    }
 
-   private static void initConfig(Configuration foServerClusterConfig, int miServerId) throws Exception
+   private static void initConfig(int miServerId) throws Exception
    {
-      localServerConfig = new ServerClusterConfig(miServerId);
-      localServerConfig.init(foServerClusterConfig);
+      localServerConfig = new QuorumPeerConfig();
+      localServerConfig.parse(instance.getClass().getClassLoader().getResource("server" + miServerId + ".cfg").toString());
    }
 
    /**
@@ -68,36 +67,30 @@ public class PeerServer
       MessagingServer.init(localServerConfig);
    }
 
-   private static void runFromConfig(ServerClusterConfig config) throws IOException
+   private static void runFromConfig(QuorumPeerConfig serverconfig) throws IOException
    {
       try
       {
-      	
-      	NIOServerCnxn.Factory cnxnFactory = new NIOServerCnxn.Factory(config.getClientPortAddress(),
-               config.getMaxClientCnxns());
-      	
-        
-         
+      	NIOServerCnxn.Factory cnxnFactory = new NIOServerCnxn.Factory(serverconfig.getClientPortAddress(),
+               serverconfig.getMaxClientCnxns());
+      	 
 
          quorumPeer = new QuorumPeer();
-         quorumPeer.setClientPortAddress(config.getClientPortAddress());
-         quorumPeer.setTxnFactory(new FileTxnSnapLog( new File(config
-               .getDataDir()), new File(config.getDataLogDir()) ));
-         quorumPeer.setQuorumPeers(config.getServers());
-         quorumPeer.setElectionType(config.getElectionAlg());
-         quorumPeer.setMyid(config.getServerId());
-         quorumPeer.setTickTime(config.getTickTime());
-         quorumPeer.setMinSessionTimeout(config.getMinSessionTimeout());
-         quorumPeer.setMaxSessionTimeout(config.getMaxSessionTimeout());
-         quorumPeer.setInitLimit(config.getInitLimit());
-         quorumPeer.setSyncLimit(config.getSyncLimit());
-         quorumPeer.setQuorumVerifier(config.getQuorumVerifier());
-         
-         // server cluster will be up even if a single server is all that is functioning   
-         //quorumPeer.setQuorumVerifier(new AdvSingleServerQuorumVerifier());
+         quorumPeer.setClientPortAddress(serverconfig.getClientPortAddress());
+         quorumPeer.setTxnFactory(new FileTxnSnapLog( new File(serverconfig
+               .getDataDir()), new File(serverconfig.getDataLogDir()) ));
+         quorumPeer.setQuorumPeers(serverconfig.getServers());
+         quorumPeer.setElectionType(serverconfig.getElectionAlg());
+         quorumPeer.setMyid(serverconfig.getServerId());
+         quorumPeer.setTickTime(serverconfig.getTickTime());
+         quorumPeer.setMinSessionTimeout(serverconfig.getMinSessionTimeout());
+         quorumPeer.setMaxSessionTimeout(serverconfig.getMaxSessionTimeout());
+         quorumPeer.setInitLimit(serverconfig.getInitLimit());
+         quorumPeer.setSyncLimit(serverconfig.getSyncLimit());
+         quorumPeer.setQuorumVerifier(serverconfig.getQuorumVerifier());
          quorumPeer.setCnxnFactory(cnxnFactory);
          quorumPeer.setZKDatabase(new ZKDatabase(quorumPeer.getTxnFactory()));
-         quorumPeer.setLearnerType(config.getPeerType());
+         quorumPeer.setLearnerType(serverconfig.getPeerType());
 
          quorumPeer.start();        
          
@@ -122,12 +115,12 @@ public class PeerServer
    }
 
 
-   public static ServerClusterConfig getConfig()
+   public static QuorumPeerConfig getConfig()
    {
       return localServerConfig;
    }
 
-   public static void setConfig(ServerClusterConfig foconfig)
+   public static void setConfig(QuorumPeerConfig foconfig)
    {
       localServerConfig = foconfig;
    }
@@ -145,10 +138,10 @@ public class PeerServer
    
    public class RunQuorumPeer extends Thread {
 
-   	ServerClusterConfig serverconfig;
+      QuorumPeerConfig serverconfig;
 
-		public RunQuorumPeer(ServerClusterConfig foconfig) {
-			serverconfig = foconfig;
+		public RunQuorumPeer(QuorumPeerConfig localServerConfig) {
+			serverconfig = localServerConfig;
 		}
 
 		@Override
