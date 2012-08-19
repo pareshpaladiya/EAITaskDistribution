@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns="http://www.springframework.org/schema/beans"
+    xmlns:integration="http://www.springframework.org/schema/integration"
+    xmlns:int-file="http://www.springframework.org/schema/integration/file"
+    xsi:schemaLocation="
+       http://www.springframework.org/schema/beans 
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/tx 
+       http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+       http://www.springframework.org/schema/aop 
+       http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+       http://www.springframework.org/schema/integration
+       http://www.springframework.org/schema/integration/spring-integration-2.0.xsd
+       http://www.springframework.org/schema/integration/file
+       http://www.springframework.org/schema/integration/file/spring-integration-file-2.0.xsd" >
+
+    <integration:channel id="messageInputChannel" />
+
+    <int-file:inbound-channel-adapter
+       directory="file:#{server.directory}" prevent-duplicates="true"
+       channel="messageInputChannel" filename-pattern="*.*">
+        <integration:poller id="poller" fixed-rate="10"/>
+    </int-file:inbound-channel-adapter>
+	
+	<integration:service-activator
+        input-channel="messageInputChannel"
+        method="processMessage"
+        ref="messageRalayer" />
+        
+    <bean id="messageRalayer" class="ibm.developerworks.article.MessageRelayer"></bean>
+            
+</beans>
