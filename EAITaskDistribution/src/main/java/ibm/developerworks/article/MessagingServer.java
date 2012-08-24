@@ -1,70 +1,87 @@
 package ibm.developerworks.article;
 
-import ibm.developerworks.article.Clustermessage.ClusterMessage;
-
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.apache.log4j.Logger;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig;
 
-import com.linkedin.norbert.network.javaapi.NettyNetworkServer;
-import com.linkedin.norbert.network.javaapi.NetworkServer;
-import com.linkedin.norbert.network.javaapi.NetworkServerConfig;
+import com.linkedin.norbert.javacompat.cluster.ZooKeeperClusterClient;
+import com.linkedin.norbert.javacompat.network.NettyNetworkServer;
+import com.linkedin.norbert.javacompat.network.NetworkServerConfig;
 
 /**
- * Wraps the netty based messaging server used for intra server communications within the cluster
+ * Wraps the Netty based messaging server used for intra server communications within the
+ * cluster
  * 
  * @author mukul.gupta
+ * @author Paresh Paladiya
  * 
  */
 public class MessagingServer
 {
-	private static NetworkServer networkServer;
+	private static com.linkedin.norbert.javacompat.network.NetworkServer networkServer;
 
-	public MessagingServer()
-	{
+	private static com.linkedin.norbert.javacompat.cluster.ZooKeeperClusterClient zkClusterClient = null;
 
-	}
+	private static Logger logr = Logger.getLogger(MessagingServer.class);
 
 	public static void init(QuorumPeerConfig config) throws UnknownHostException
 	{
-		if (networkServer != null)
-		{
-			networkServer.shutdown();
-			System.out.println("Shutting down netty server to reconnect");
-		}
 
-		MessagingClient.initClient(config);
+		logr.info("Starting Netty Server...");
 
-		// Now all that's left is for this server to bind itself to the right
-		// node id: nodeId
-		// We use the following classes in the Norbert API
-		NetworkServerConfig networkConfig = new NetworkServerConfig();
+		// client (wrapper) for zookeeper server - point to local / in process
+		// zookeeper server
+		String lsHost = "localhost" + ":" + config.getClientPortAddress().getPort();
 
-		// All communication is routed through the cluster client
-		networkConfig.setClusterClient(MessagingClient.getClusterClient());
+		zkClusterClient = new com.linkedin.norbert.javacompat.cluster.ZooKeeperClusterClient(
+		      "eai_sample_service", lsHost, 20000);
 
-		// Let's have a reasonable number of threads available to process
-		// requests
-		networkConfig.setRequestThreadMaxPoolSize(30);
+		zkClusterClient.awaitConnectionUninterruptibly();
+		logr.debug("Norbert server - connected to zookeeper server");
 
-		networkServer = new NettyNetworkServer(networkConfig);
+		// url - is URL for local Netty server URL
+		String nettyServerURL;
+		int nodeId = Server.getServerId();
 
-		// Indicate what messages we want to handle and how to serialize them
-		// All messages sent to this server will be
-		// ns.registerHandler(new ClusterMessageHandler(), new
-		// ClusterMesssageSerializer());
+		nettyServerURL = String.format("%s:%d", InetAddress.getLocalHost().getHostName(),
+		      Server.getNettyServerPort());
 
-		// Bind our server to the node that we previously configured. This tells
-		// all other cluster
-		// members that the server at nodeId is ready to receive messages
+		logr.debug("Starting Netty server:Server id=" + nodeId + " server URL ="
+		      + nettyServerURL);
 
-		networkServer.registerHandler(ClusterMessage.getDefaultInstance(),
-		      ClusterMessage.getDefaultInstance(), new ClusterMessageHandler());
+		zkClusterClient.removeNode(nodeId);
+		zkClusterClient.addNode(nodeId, nettyServerURL);
 
-		networkServer.bind((int) config.getServerId());
+		// add cluster listener to monitor state
+		zkClusterClient.addListener(new ClusterStateListener());
 
-		MessagingClient.postInit();
+		// Norbert - Netty server config
+		NetworkServerConfig norbertServerConfig = new NetworkServerConfig();
 
+		// communication via norbert zookeeper cluster client
+		norbertServerConfig.setClusterClient(zkClusterClient);
+
+		// Threads required for processing requests
+		norbertServerConfig.setRequestThreadMaxPoolSize(20);
+
+		networkServer = new NettyNetworkServer(norbertServerConfig);
+
+		// register message handler (identifies request and response types) and the
+		// corresponding object serializer for the request and response
+		networkServer.registerHandler(new AppMessageHandler(), new CommonSerializer());
+
+		networkServer.bind(Server.getServerId());
 	}
 
+	/**
+	 * Returns the ZooKeeper cluster client wrapped by the messaging server
+	 * 
+	 * @return
+	 */
+	public static ZooKeeperClusterClient getZooKeeperClusterClient()
+	{
+		return zkClusterClient;
+	}
 }

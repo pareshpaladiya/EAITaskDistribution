@@ -2,7 +2,6 @@ package  ibm.developerworks.article;
 
 message ClusterMessage
 {
-
    required string id = 1;
    required int32 type = 2;
    optional string content = 3;

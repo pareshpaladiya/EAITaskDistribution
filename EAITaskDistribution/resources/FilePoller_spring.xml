@@ -20,7 +20,7 @@
     <integration:channel id="messageInputChannel" />
 
     <int-file:inbound-channel-adapter
-       directory="file:#{server.directory}" prevent-duplicates="true"
+       directory="file:#{ systemProperties['input.dir'] }" prevent-duplicates="true"
        channel="messageInputChannel" filename-pattern="*.*">
         <integration:poller id="poller" fixed-rate="10"/>
     </int-file:inbound-channel-adapter>
