@@ -12,6 +12,14 @@ import org.springframework.integration.Message;
 import com.google.common.io.Files;
 
 
+/**
+ * This class will receive File message from poller. It will acknowledge zeekeeper
+ * server to process message. 
+ * 
+ * @author Mukul Gupta
+ * @author Paresh Paladiya
+ *
+ */
 public class MessageRelayer
 {
 	private static final Charset charset = Charset.forName("UTF-8");
@@ -37,26 +45,11 @@ public class MessageRelayer
       }
       catch (IOException e1)
       {
-	      // TODO Auto-generated catch block
-	      e1.printStackTrace();
+	      logr.error("File operation failed.", e1);
       }
       catch (Exception e)
       {
-	      // TODO Auto-generated catch block
-	      e.printStackTrace();
-      }
-      
-      
-      		
-      
-      try
-      {
-         System.out.println("Got file to process: " + loFile.getCanonicalPath());
-      }
-      catch (IOException e)
-      {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
+      	logr.error("Failed to process file.", e);
       }
    }
 }
