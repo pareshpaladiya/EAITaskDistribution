@@ -32,5 +32,6 @@
 	<classpathentry kind="lib" path="lib/scala-library-2.8.1.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.5.6.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.5.6.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/google/protobuf/protobuf-java/2.4.0a/protobuf-java-2.4.0a.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

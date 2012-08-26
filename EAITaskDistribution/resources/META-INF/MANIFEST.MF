@@ -16,5 +16,6 @@ Class-Path: . EAITaskDistribution_lib/log4j-1.2.16.jar EAITaskDistribu
  EAITaskDistribution_lib/spring-context-support-3.1.1.RELEASE.jar EAIT
  askDistribution_lib/commons-logging-1.1.1.jar EAITaskDistribution_lib
  /spring-aop-3.1.1.RELEASE.jar EAITaskDistribution_lib/scala-library-2
- .8.1.jar EAITaskDistribution_lib/commons-configuration-1.8.jar
+ .8.1.jar EAITaskDistribution_lib/commons-configuration-1.8.jar EAITas
+ kDistribution_lib/protobuf-java-2.4.1.jar
 
