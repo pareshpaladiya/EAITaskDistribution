@@ -2,9 +2,9 @@
 <beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:aop="http://www.springframework.org/schema/aop"
     xmlns:tx="http://www.springframework.org/schema/tx"
-    xmlns="http://www.springframework.org/schema/beans"
     xmlns:integration="http://www.springframework.org/schema/integration"
     xmlns:int-file="http://www.springframework.org/schema/integration/file"
+    xmlns="http://www.springframework.org/schema/beans"
     xsi:schemaLocation="
        http://www.springframework.org/schema/beans 
        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
@@ -20,16 +20,24 @@
     <integration:channel id="messageInputChannel" />
 
     <int-file:inbound-channel-adapter
-       directory="file:#{ systemProperties['input.dir'] }" prevent-duplicates="true"
-       channel="messageInputChannel" filename-pattern="*.*">
-        <integration:poller id="poller" fixed-rate="10"/>
+        channel="messageInputChannel"
+        directory="file:#{ systemProperties[&apos;input.dir&apos;] }"
+        filename-pattern="*.*"
+        prevent-duplicates="true" >
+
+        <integration:poller
+            id="poller"
+            fixed-rate="10" />
     </int-file:inbound-channel-adapter>
-	
-	<integration:service-activator
+
+    <integration:service-activator
         input-channel="messageInputChannel"
         method="processMessage"
-        ref="messageRalayer" />
-        
-    <bean id="messageRalayer" class="ibm.developerworks.article.MessageRelayer"></bean>
-            
+        ref="taskDistributor" />
+
+    <bean
+        id="taskDistributor"
+        class="ibm.developerworks.article.TaskDistributor" >
+    </bean>
+
 </beans>

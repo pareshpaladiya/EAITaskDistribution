@@ -14,129 +14,122 @@ import org.apache.log4j.Logger;
 public class AppRequestMsg implements AppMessage
 {
 
-	/*
-	 * message id
-	 */
-	private String id = null;
-	
-	/*
-	 * message payload
-	 */
-	private String payload = null;
+   /*
+    * message id
+    */
+   private String id = null;
 
-	/*
-	 * Character set used for serialization and deserialization
-	 */
-	private static final Charset charset = Charset.forName("UTF-8");
+   /*
+    * message payload
+    */
+   private String payload = null;
 
-	/*
-	 * delimter character used for serialization and deserialization
-	 */
-	private static final char delim = '|';
+   /*
+    * Character set used for serialization and deserialization
+    */
+   private static final Charset charset = Charset.forName("UTF-8");
 
-	private static Logger logr = Logger.getLogger(Server.class);
+   /*
+    * delimter character used for serialization and deserialization
+    */
+   private static final char delim = '|';
 
-	/**
-	 * Returns message with Id automatically generated
-	 * 
-	 * @param payload
-	 *           the message payload
-	 */
-	public AppRequestMsg(String payload)
-	{
-		id = Server.getUniqMessgId();
-		this.payload = payload;
-		
-		if (payload ==null)
-		{
-			this.payload ="";
-		}
-			
-	}
+   private static Logger logr = Logger.getLogger(AppRequestMsg.class);
 
-	public AppRequestMsg()
-	{
-		// TODO Auto-generated constructor stub
-	}
+   /**
+    * Returns message with Id automatically generated
+    * 
+    * @param payload
+    *           the message payload
+    */
+   public AppRequestMsg(String payload)
+   {
+      id = Server.getUniqMessgId();
+      this.payload = payload;
 
-	public String getId()
-	{
-		return id;
-	}
+      if (payload == null)
+      {
+         this.payload = "";
+      }
 
-	public String getPayload()
-	{
-		return payload;
-	}
+   }
 
-	/**
-	 * Serializes this object
-	 */
-	public byte[] serialize()
-	{
-		StringBuilder serObj = new StringBuilder(payload.length() + 64);
-		serObj.append(id).append(delim).append(payload);
+   public AppRequestMsg()
+   {
 
-		return serObj.toString().getBytes(charset);
-	}
+   }
 
-	public AppMessage returnObject(byte[] obj)
-	{
-		return deserialize(obj);
-	}
+   public String getId()
+   {
+      return id;
+   }
 
-	public static AppRequestMsg deserialize(byte[] obj)
-	{
-		// this is the serialized string using our defined characterset
-		String s = new String(obj, charset);
-		String[] parts = StringUtils.split(s, delim);
+   public String getPayload()
+   {
+      return payload;
+   }
 
-		AppRequestMsg returnObj = new AppRequestMsg();
-		returnObj.setId(parts[0]);
-		returnObj.setPayload(parts[1]);
+   /**
+    * Serializes this object
+    */
+   public byte[] serialize()
+   {
+      StringBuilder serObj = new StringBuilder(payload.length() + 64);
+      serObj.append(id).append(delim).append(payload);
 
-		return returnObj;
-	}
+      return serObj.toString().getBytes(charset);
+   }
 
-	/**
-	 * Sets the Id for this message
-	 * 
-	 * @param id
-	 *           the message id
-	 */
-	public void setId(String id)
-	{
-		this.id = id;
-	}
+   public AppMessage returnObject(byte[] obj)
+   {
+      return deserialize(obj);
+   }
 
-	/**
-	 * Sets the payload for this message
-	 * 
-	 * @param payload
-	 *           the message payload
-	 */
-	public void setPayload(String payload)
-	{
-		this.payload = payload;
-	}
+   public static AppRequestMsg deserialize(byte[] obj)
+   {
+      // this is the serialized string using our defined characterset
+      String objectAsString = new String(obj, charset);
+      String[] parts = StringUtils.split(objectAsString, delim);
 
-	@Override
-	public String toString()
-	{
-		return "id:" + id + " payload:" + payload;
-	}
+      logr.trace("deserializing message:payload=" + objectAsString);
 
-	public static void main(String[] args)
-	{
-		AppRequestMsg lomsg = new AppRequestMsg();
-		lomsg.setId("myid");
-		lomsg.setPayload("my payload for this message");
+      AppRequestMsg returnObj = new AppRequestMsg();
+      returnObj.setId(parts[0]);
+      returnObj.setPayload(objectAsString.substring(parts[0].length() + 1));
+      
+      logr.trace("deserializing message:Id=" + returnObj.getId());
+      logr.trace("deserializing message:payload="
+            + returnObj.getPayload());
 
-		byte[] out = lomsg.serialize();
-		System.out.println("Serialized message:" + new String(out));
+      return returnObj;
+   }
 
-		System.out.println("return message:" + lomsg.returnObject(out).toString());
+   /**
+    * Sets the Id for this message
+    * 
+    * @param id
+    *           the message id
+    */
+   public void setId(String id)
+   {
+      this.id = id;
+   }
 
-	}
+   /**
+    * Sets the payload for this message
+    * 
+    * @param payload
+    *           the message payload
+    */
+   public void setPayload(String payload)
+   {
+      this.payload = payload;
+   }
+
+   @Override
+   public String toString()
+   {
+      return "id:" + id + " payload:" + payload;
+   }
 
 }

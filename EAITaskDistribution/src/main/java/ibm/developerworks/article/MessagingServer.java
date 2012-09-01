@@ -20,68 +20,68 @@ import com.linkedin.norbert.javacompat.network.NetworkServerConfig;
  */
 public class MessagingServer
 {
-	private static com.linkedin.norbert.javacompat.network.NetworkServer networkServer;
+   private static com.linkedin.norbert.javacompat.network.NetworkServer networkServer;
 
-	private static com.linkedin.norbert.javacompat.cluster.ZooKeeperClusterClient zkClusterClient = null;
+   private static com.linkedin.norbert.javacompat.cluster.ZooKeeperClusterClient zkClusterClient = null;
 
-	private static Logger logr = Logger.getLogger(MessagingServer.class);
+   private static Logger logr = Logger.getLogger(MessagingServer.class);
 
-	public static void init(QuorumPeerConfig config) throws UnknownHostException
-	{
+   public static void init(QuorumPeerConfig config) throws UnknownHostException
+   {
 
-		logr.info("Starting Netty Server...");
+      logr.info("Starting Netty Server...");
 
-		// client (wrapper) for zookeeper server - point to local / in process
-		// zookeeper server
-		String lsHost = "localhost" + ":" + config.getClientPortAddress().getPort();
+      // [a] client (wrapper) for zookeeper server - point to local / in process
+      // zookeeper server
+      String host = "localhost" + ":" + config.getClientPortAddress().getPort();
 
-		zkClusterClient = new com.linkedin.norbert.javacompat.cluster.ZooKeeperClusterClient(
-		      "eai_sample_service", lsHost, 20000);
+      zkClusterClient = new ZooKeeperClusterClient("eai_sample_service", host, 20000);
 
-		zkClusterClient.awaitConnectionUninterruptibly();
-		logr.debug("Norbert server - connected to zookeeper server");
+      zkClusterClient.awaitConnectionUninterruptibly();
+      logr.debug("Norbert server - connected to zookeeper server");
 
-		// url - is URL for local Netty server URL
-		String nettyServerURL;
-		int nodeId = Server.getServerId();
+      // [b] nettyServerURL - is URL for local Netty server URL
+      String nettyServerURL;
+      int nodeId = Server.getId();
 
-		nettyServerURL = String.format("%s:%d", InetAddress.getLocalHost().getHostName(),
-		      Server.getNettyServerPort());
+      nettyServerURL = String.format("%s:%d", InetAddress.getLocalHost().getHostName(),
+            Server.getNettyServerPort());
 
-		logr.debug("Starting Netty server:Server id=" + nodeId + " server URL ="
-		      + nettyServerURL);
+      logr.debug("Starting Netty server:Server id=" + nodeId + " server URL ="
+            + nettyServerURL);
 
-		zkClusterClient.removeNode(nodeId);
-		zkClusterClient.addNode(nodeId, nettyServerURL);
+      // [c]
+      zkClusterClient.removeNode(nodeId);
+      zkClusterClient.addNode(nodeId, nettyServerURL);
 
-		// add cluster listener to monitor state
-		zkClusterClient.addListener(new ClusterStateListener());
+      // [d] add cluster listener to monitor state
+      zkClusterClient.addListener(new ClusterStateListener());
 
-		// Norbert - Netty server config
-		NetworkServerConfig norbertServerConfig = new NetworkServerConfig();
+      // [e] Norbert - Netty server config
+      NetworkServerConfig norbertServerConfig = new NetworkServerConfig();
 
-		// communication via norbert zookeeper cluster client
-		norbertServerConfig.setClusterClient(zkClusterClient);
+      // [f] group coordination via zookeeper cluster client
+      norbertServerConfig.setClusterClient(zkClusterClient);
 
-		// Threads required for processing requests
-		norbertServerConfig.setRequestThreadMaxPoolSize(20);
+      // [g] threads required for processing requests
+      norbertServerConfig.setRequestThreadMaxPoolSize(20);
 
-		networkServer = new NettyNetworkServer(norbertServerConfig);
+      networkServer = new NettyNetworkServer(norbertServerConfig);
 
-		// register message handler (identifies request and response types) and the
-		// corresponding object serializer for the request and response
-		networkServer.registerHandler(new AppMessageHandler(), new CommonSerializer());
+      // [h] register message handler (identifies request and response types) and the
+      // corresponding object serializer for the request and response
+      networkServer.registerHandler(new AppMessageHandler(), new CommonSerializer());
 
-		networkServer.bind(Server.getServerId());
-	}
+      networkServer.bind(Server.getId());
+   }
 
-	/**
-	 * Returns the ZooKeeper cluster client wrapped by the messaging server
-	 * 
-	 * @return
-	 */
-	public static ZooKeeperClusterClient getZooKeeperClusterClient()
-	{
-		return zkClusterClient;
-	}
+   /**
+    * Returns the ZooKeeper cluster client wrapped by the messaging server
+    * 
+    * @return
+    */
+   public static ZooKeeperClusterClient getZooKeeperClusterClient()
+   {
+      return zkClusterClient;
+   }
 }
