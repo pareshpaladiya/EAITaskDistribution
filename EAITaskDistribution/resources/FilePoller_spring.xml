@@ -27,7 +27,7 @@
 
         <integration:poller
             id="poller"
-            fixed-rate="10" />
+            fixed-rate="2" />
     </int-file:inbound-channel-adapter>
 
     <integration:service-activator

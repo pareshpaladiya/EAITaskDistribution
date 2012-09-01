@@ -2,6 +2,7 @@ package ibm.developerworks.article;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.nio.charset.Charset;
 import java.util.concurrent.Future;
 
@@ -27,6 +28,7 @@ public class TaskDistributor
       File polledFile = polledMessg.getPayload();
       
       String payload = null;
+      String ack = null;
       try
       {
       	logr.info("Received file as input:" + polledFile.getCanonicalPath());
@@ -38,14 +40,28 @@ public class TaskDistributor
 	      //create new message
 	      AppRequestMsg newMessg = new AppRequestMsg(payload);
 	      
-	      //loadbalance the request to operating servers without
-	      //targetting any one in particular
-	      Future<String> retAck = MessagingClient.sendMessage(newMessg, -1);
-	      
-	      //block for acknowledgement - could have processed acknowledgement
-	      //
-	      String ack = retAck.get();
-	      
+	      try
+	      {
+   	      //loadbalance the request to operating servers without
+   	      //targetting any one in particular
+   	      Future<String> retAck = MessagingClient.sendMessage(newMessg, -1);
+   	      
+   	      //block for acknowledgement - could have processed acknowledgement
+   	      //
+   	      ack = retAck.get();
+	      }
+	      catch(Exception ex)
+	      {
+	         //Cluster topology not synchronized yet so lets wait till configured time for 
+	         //zookeeperclusterclient session timeout
+	         Thread.sleep(20000);
+	         logr.trace("Retrying sending message: payload:" + payload);
+	         Future<String> retAck = MessagingClient.sendMessage(newMessg, -1);
+            
+            //block for acknowledgement - could have processed acknowledgement
+            //
+            ack = retAck.get();
+	      }
 	      FileUtils.deleteQuietly(polledFile);
 	      logr.info("sent message and received acknowledgement:" + ack);
       }
