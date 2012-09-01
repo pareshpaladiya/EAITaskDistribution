@@ -35,7 +35,6 @@ public class TestClient
 
    public void testFileProcessing(String inputDir) throws Exception
    {
-      System.out.println("\n\n#### Starting Sequential processing test ####");
       System.out.println("Populating directory with files");
       
       for (int i = 0; i < fileCount; i++)
