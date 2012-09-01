@@ -4,7 +4,7 @@ package ibm.developerworks.article;
  * Contract for all message text exchanges for this application. UTF-8 charset used for
  * all operations.
  * 
- * @author mukul.gupta
+ * @author Mukul Gupta
  * @author Paresh Paladiya
  * 
  */

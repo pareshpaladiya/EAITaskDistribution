@@ -14,7 +14,7 @@ import com.linkedin.norbert.javacompat.network.NetworkServerConfig;
  * Wraps the Netty based messaging server used for intra server communications within the
  * cluster
  * 
- * @author mukul.gupta
+ * @author Mukul Gupta
  * @author Paresh Paladiya
  * 
  */

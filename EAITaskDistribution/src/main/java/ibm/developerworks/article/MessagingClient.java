@@ -16,7 +16,7 @@ import com.linkedin.norbert.javacompat.network.RoundRobinLoadBalancerFactory;
 /**
  * Wraps the Netty based norbert client for this server (one per JVM)
  * 
- * @author mukul.gupta
+ * @author Mukul Gupta
  * @author Paresh Paladiya
  * 
  */

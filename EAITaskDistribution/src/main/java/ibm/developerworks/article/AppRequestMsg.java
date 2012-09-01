@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 /**
  * Request message for wrapping EAI event payloads for the application
  * 
- * @author mukul gupta
+ * @author Mukul Gupta
  * @author paresh paladiya
  */
 public class AppRequestMsg implements AppMessage

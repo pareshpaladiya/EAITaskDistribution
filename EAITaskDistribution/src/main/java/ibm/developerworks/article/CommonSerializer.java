@@ -4,6 +4,12 @@ import java.nio.charset.Charset;
 
 import com.linkedin.norbert.network.Serializer;
 
+/**
+ * Message serializer.
+ * 
+ * @author Mukul Gupta
+ * @author Paresh Paladiya
+ */
 public class CommonSerializer implements Serializer<AppRequestMsg, String>
 {
 

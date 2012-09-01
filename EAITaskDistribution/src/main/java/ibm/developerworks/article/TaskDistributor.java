@@ -14,7 +14,8 @@ import com.google.common.io.Files;
 
 /**
  * Models the task distributor  
- * @author mukul.gupta
+ * 
+ * @author Mukul Gupta
  * @author paresh.paladiya
  *
  */

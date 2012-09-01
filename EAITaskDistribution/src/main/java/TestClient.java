@@ -9,6 +9,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.core.PollableChannel;
 
+/**
+ * Generates configured number of files to test cluster
+ * task distribution.
+ * 
+ * @author Mukul Gupta
+ * @author Paresh Paladiya
+ * 
+ */
 public class TestClient
 {
    //private Logger logr = Logger.getLogger(TestClient.class);

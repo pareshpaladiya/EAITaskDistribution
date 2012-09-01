@@ -16,7 +16,7 @@ import com.google.common.io.Files;
 /**
  * Wraps a zookeeper server construct for the solution
  * 
- * @author mukul.gupta
+ * @author Mukul Gupta
  * @author Paresh Paladiya
  */
 public class ZooKeeperServer implements Runnable

@@ -7,6 +7,12 @@ import org.apache.log4j.Logger;
 import com.linkedin.norbert.javacompat.cluster.ClusterListener;
 import com.linkedin.norbert.javacompat.cluster.Node;
 
+/**
+ * Cluster topology change listener. This class updates running server list.
+ * 
+ * @author Mukul Gupta
+ * @author Paresh Paladiya
+ */
 public class ClusterStateListener implements ClusterListener
 {
    private static Logger logr = Logger.getLogger(ClusterStateListener.class);
